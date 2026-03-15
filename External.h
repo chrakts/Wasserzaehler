@@ -48,4 +48,7 @@ extern Communication cnet;
 extern ComReceiver cnetRec;
 extern CRC_Calc crcGlobal;
 
+extern volatile uint16_t avg_value;
+
+
 #endif /* EXTERNAL_H_ */

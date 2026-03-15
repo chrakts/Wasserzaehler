@@ -26,6 +26,7 @@
 
 #include "xxHardware.h"
 #include "ledHardware.h"
+#include "adcControl.h"
 
 void initZaehler();
 

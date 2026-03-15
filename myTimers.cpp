@@ -10,13 +10,13 @@
 
 volatile TIMER MyTimers[MYTIMER_NUM]= {	{TM_START,RESTART_YES,actReportBetweenSensors,0,nextReportStatus},
                                         {TM_START,RESTART_YES,30000,0,storeEEprom}, // 30000  alle 5 Minuten
-                                        {TM_START,RESTART_YES,5000,0,led1Blinken},
+                                        {TM_START,RESTART_YES,100,0,led1Blinken},
                                         {TM_STOP,RESTART_NO,5,0,entprellen}
 };
 
 void led1Blinken(uint8_t test)
 {
-	LEDROT_TOGGLE;
+	//LEDROT_TOGGLE;
 }
 
 void entprellen(uint8_t test)
@@ -31,7 +31,7 @@ void storeEEprom(uint8_t test)
 
 void nextReportStatus(uint8_t test)
 {
-  LEDGRUEN_ON;
+  //LEDGRUEN_ON;
 	sendStatusReport = true;
 	statusReport+=1;
 	if( statusReport > LASTREPORT )

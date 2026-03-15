@@ -42,7 +42,7 @@
 
 /* ###################### Busy-Timer  ############################ */
 // Dieser Timer wird dann für beide Ports verwendet (Timer2 L/H -> belegt damit auch Timer 1!)
-#define BUSY_TIMER_PORT C
+#define BUSY_TIMER_PORT D
 /* ###################### ########### ############################ */
 
 

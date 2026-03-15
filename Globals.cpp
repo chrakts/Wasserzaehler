@@ -24,6 +24,7 @@ volatile bool    sendStatusReport = true;
 
 volatile bool doEEpromStoring = false;
 
+
 Communication cnet(0,Node,5,true);
 ComReceiver cnetRec(&cnet,Node,cnetCommands,NUM_COMMANDS,information,NUM_INFORMATION,NULL,NULL);
 

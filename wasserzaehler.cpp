@@ -10,11 +10,34 @@ void setup()
 	PORTA_DIRSET = PIN2_bm | PIN3_bm | PIN4_bm;
 	PORTA_OUTSET = 0xff;
 	PORTB_DIRSET = 0xff;
-	PORTC_DIRSET = PIN1_bm;
+	PORTC_DIRSET = PIN1_bm | PIN4_bm;
 	PORTD_DIRSET = 0xff;
 	PORTE_DIRSET = PIN0_bm | PIN1_bm | PIN3_bm;
 
-	initZaehler();
+	uint8_t i;
+	for(i=0;i<20;i++)
+  {
+    LEDBLAU_TOGGLE;
+    _delay_ms(100);
+  }
+  LEDBLAU_OFF;
+
+
+	//initZaehler();
+
+    port_init();
+
+    adc_init();
+    timer_init();
+    evsys_init();
+    dma_init();
+
+  //adc_test_init();
+
+  //  adc_event_init();   // ADC über Event initieren
+  /*  timer_init();
+    event_init();
+    dma_test_init();*/
 
   eeprom_value_t temp;
   eeprom_logger_init(&temp);
@@ -30,8 +53,18 @@ int main(void)
 	setup();
 	cnet.broadcastUInt8((uint8_t) RST.STATUS,'S','0','R');
 	init_mytimer();
-
-
+/*
+	uint16_t v;
+  while (1)
+  {
+        // Warten bis ADC eine Event‑Messung gemacht hat
+        if (ADCA.CH0.INTFLAGS & ADC_CH_CHIF_bm)
+        {
+            v = ADCA.CH0RES;   // hier im Debugger beobachten
+            cnet.broadcastUInt16(v,'#','#','#');
+            ADCA.CH0.INTFLAGS = ADC_CH_CHIF_bm;
+        }
+    }*/
 
 	while (1)
 	{
@@ -53,6 +86,9 @@ int main(void)
         {
           case FIRSTREPORT:
             cnet.broadcastUInt32((uint32_t) wasserstand,'W','0','a');
+          break;
+          case ADCREPORT:
+            cnet.broadcastUInt16(avg_value,'W','a','c');
           break;
 
           case LASTREPORT:
