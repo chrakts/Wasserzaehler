@@ -67,6 +67,10 @@ int main(void)
         }
     }*/
 
+  testMain();
+
+  while(1);
+
 	while (1)
 	{
 		cnetRec.comStateMachine();
