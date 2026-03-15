@@ -23,22 +23,23 @@ void setup()
   LEDBLAU_OFF;
 
 
-	//initZaehler();
 
-    port_init();
+  port_init();
 
-    adc_init();
-    timer_init();
-    evsys_init();
-    dma_init();
+  adc_init();
+  timer_init();
+  evsys_init();
+  dma_init();
 
-  //adc_test_init();
+      // DAC initialisieren
+  DACB.CTRLC = DAC_REFSEL_AVCC_gc;        // Referenz AVCC
+  DACB.CTRLA = DAC_CH0EN_bm | DAC_ENABLE_bm; // Kanal 0 aktiv, DAC Enable
+  DACB.CTRLB = 0;                         // kein Trigger
 
-  //  adc_event_init();   // ADC über Event initieren
-  /*  timer_init();
-    event_init();
-    dma_test_init();*/
+  // festen Wert ausgeben
+  DACB.CH0DATA = 0xfff; // Mittelwert ~AVCC/2
 
+  //initZaehler();
   eeprom_value_t temp;
   eeprom_logger_init(&temp);
   wasserstand = temp;
@@ -85,7 +86,7 @@ int main(void)
         switch(statusReport)
         {
           case FIRSTREPORT:
-            cnet.broadcastUInt32((uint32_t) wasserstand,'W','0','a');
+            //cnet.broadcastUInt32((uint32_t) wasserstand,'W','0','a');
           break;
           case ADCREPORT:
             cnet.broadcastUInt16(avg_value,'W','a','c');

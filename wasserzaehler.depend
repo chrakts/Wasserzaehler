@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1770397554 source:/home/chrak/Daten/Software/repositories/communication/Communication.cpp
+1773483278 source:/home/chrak/Daten/Software/repositories/communication/Communication.cpp
 	"Communication.h"
 	"CRC_Calc.h"
 
@@ -24,7 +24,7 @@
 	<avr/pgmspace.h>
 	<avr/interrupt.h>
 
-1770395383 /home/chrak/Daten/Software/repositories/Wasserzaehler//uartHardware.h
+1773489363 /home/chrak/Daten/Software/repositories/Wasserzaehler//uartHardware.h
 
 1767730633 /home/chrak/Daten/Software/repositories/communication/CRC_Calc.h
 	<avr/io.h>
@@ -33,7 +33,7 @@
 1767730633 source:/home/chrak/Daten/Software/repositories/communication/CRC_Calc.cpp
 	"CRC_Calc.h"
 
-1767730633 source:/home/chrak/Daten/Software/repositories/communication/Serial.cpp
+1773485074 source:/home/chrak/Daten/Software/repositories/communication/Serial.cpp
 	"Serial.h"
 	"uartHardware.h"
 
@@ -71,12 +71,12 @@
 	<stdint.h>
 	<stdio.h>
 
-1770408112 /home/chrak/Daten/Software/repositories/Wasserzaehler//myTimers.h
+1773350114 /home/chrak/Daten/Software/repositories/Wasserzaehler//myTimers.h
 	"timer.h"
 	"External.h"
 	"myconstants.h"
 
-1770402011 /home/chrak/Daten/Software/repositories/Wasserzaehler//External.h
+1773515615 /home/chrak/Daten/Software/repositories/Wasserzaehler//External.h
 	<avr/io.h>
 	<stdbool.h>
 	<avr/pgmspace.h>
@@ -94,7 +94,7 @@
 	"secrets.h"
 	"eeprom_logger.h"
 
-1770397839 /home/chrak/Daten/Software/repositories/Wasserzaehler//myconstants.h
+1773570418 /home/chrak/Daten/Software/repositories/Wasserzaehler//myconstants.h
 
 1767730719 source:/home/chrak/Daten/Software/repositories/xmegaClocks/xmegaClocks.cpp
 	<avr/io.h>
@@ -113,16 +113,16 @@
 	<stdbool.h>
 	<stdint.h>
 
-1770408101 source:/home/chrak/Daten/Software/repositories/Wasserzaehler/myTimers.cpp
+1773511380 source:/home/chrak/Daten/Software/repositories/Wasserzaehler/myTimers.cpp
 	"myTimers.h"
 	"ledHardware.h"
 
-1770408112 /home/chrak/Daten/Software/repositories/Wasserzaehler/myTimers.h
+1773350114 /home/chrak/Daten/Software/repositories/Wasserzaehler/myTimers.h
 	"timer.h"
 	"External.h"
 	"myconstants.h"
 
-1770402011 /home/chrak/Daten/Software/repositories/Wasserzaehler/External.h
+1773515615 /home/chrak/Daten/Software/repositories/Wasserzaehler/External.h
 	<avr/io.h>
 	<stdbool.h>
 	<avr/pgmspace.h>
@@ -140,19 +140,19 @@
 	"secrets.h"
 	"eeprom_logger.h"
 
-1770397839 /home/chrak/Daten/Software/repositories/Wasserzaehler/myconstants.h
+1773570418 /home/chrak/Daten/Software/repositories/Wasserzaehler/myconstants.h
 
-1770395383 /home/chrak/Daten/Software/repositories/Wasserzaehler/ledHardware.h
+1773350114 /home/chrak/Daten/Software/repositories/Wasserzaehler/ledHardware.h
 
-1770404032 source:/home/chrak/Daten/Software/repositories/Wasserzaehler/CommandFunctions.cpp
+1773350114 source:/home/chrak/Daten/Software/repositories/Wasserzaehler/CommandFunctions.cpp
 	"CommandFunctions.h"
 	"External.h"
 	"secrets.h"
 
-1770397643 /home/chrak/Daten/Software/repositories/Wasserzaehler/CommandFunctions.h
+1773350114 /home/chrak/Daten/Software/repositories/Wasserzaehler/CommandFunctions.h
 	"wasserzaehler.h"
 
-1770406577 /home/chrak/Daten/Software/repositories/Wasserzaehler/wasserzaehler.h
+1773488544 /home/chrak/Daten/Software/repositories/Wasserzaehler/wasserzaehler.h
 	<avr/io.h>
 	<stdbool.h>
 	<avr/pgmspace.h>
@@ -175,29 +175,30 @@
 	"xmegaClocks.h"
 	"xxHardware.h"
 	"ledHardware.h"
+	"adcControl.h"
 
 1767730648 /home/chrak/Daten/Software/repositories/ComReceiver/cmultiStandardCommands.h
 
-1770395383 /home/chrak/Daten/Software/repositories/Wasserzaehler/xxHardware.h
+1773350114 /home/chrak/Daten/Software/repositories/Wasserzaehler/xxHardware.h
 
-1770401982 source:/home/chrak/Daten/Software/repositories/Wasserzaehler/Globals.cpp
+1773489632 source:/home/chrak/Daten/Software/repositories/Wasserzaehler/Globals.cpp
 	"wasserzaehler.h"
 	"CmultiAddresses.h"
 
 1770396570 /home/chrak/Daten/Software/repositories/communication/CmultiAddresses.h
 
-1770409125 source:/home/chrak/Daten/Software/repositories/Wasserzaehler/wasserzaehler.cpp
+1773570327 source:/home/chrak/Daten/Software/repositories/Wasserzaehler/wasserzaehler.cpp
 	"wasserzaehler.h"
 
-1770403772 /home/chrak/Daten/Software/repositories/Wasserzaehler//eeprom_logger.h
+1773350114 /home/chrak/Daten/Software/repositories/Wasserzaehler//eeprom_logger.h
 	<stdint.h>
 	<stddef.h>
 
-1770403772 /home/chrak/Daten/Software/repositories/Wasserzaehler/eeprom_logger.h
+1773350114 /home/chrak/Daten/Software/repositories/Wasserzaehler/eeprom_logger.h
 	<stdint.h>
 	<stddef.h>
 
-1770403773 source:/home/chrak/Daten/Software/repositories/Wasserzaehler/eeprom_logger.cpp
+1773350114 source:/home/chrak/Daten/Software/repositories/Wasserzaehler/eeprom_logger.cpp
 	"eeprom_logger.h"
 	<avr/eeprom.h>
 	<stddef.h>
@@ -1133,4 +1134,11 @@
 	<avr/io.h>
 	<stddef.h>
 	<stdint.h>
+
+1773529389 /home/chrak/Daten/Software/repositories/Wasserzaehler/adcControl.h
+
+1773567794 source:/home/chrak/Daten/Software/repositories/Wasserzaehler/adcControl.cpp
+	<avr/io.h>
+	<avr/interrupt.h>
+	"wasserzaehler.h"
 
