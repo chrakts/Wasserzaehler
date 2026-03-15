@@ -6,3 +6,5 @@ bin/Release/
 obj/
 
 bin/
+
+*.layout
