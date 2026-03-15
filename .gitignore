@@ -1,0 +1,10 @@
+
+-ffunction-sections
+
+bin/Release/
+
+obj/
+
+bin/
+
+*.layout
