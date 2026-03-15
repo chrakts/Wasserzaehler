@@ -124,6 +124,8 @@
 		<Unit filename="adcControl.h" />
 		<Unit filename="eeprom_logger.cpp" />
 		<Unit filename="eeprom_logger.h" />
+		<Unit filename="interpolator.cpp" />
+		<Unit filename="interpolator.h" />
 		<Unit filename="ledHardware.h" />
 		<Unit filename="myTimers.cpp" />
 		<Unit filename="myTimers.h" />
