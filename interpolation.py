@@ -99,6 +99,7 @@ class SinTracker:
         self.amplitude = 100      # Startwert
         self.last_bin = 0
         self.bin_count = [0]*12
+        self.cycle_count = 0
         self.bin_mean = [0.0]*12  # Inkrementeller Mittelwert pro Bin
 
         # Zyklus-Erkennung
@@ -128,7 +129,7 @@ class SinTracker:
         self.bins_visited.add(bin12)
         if len(self.bins_visited) == 12:
             self.cycle_detected = True
-
+            self.cycle_count = self.cycle_count + 1
             # Neuer Offset = Mittelwert über alle Bin-Mittelwerte
             new_offset = sum(self.bin_mean)/12
 
@@ -159,4 +160,4 @@ tracker = SinTracker()
 
 for s in signal_data:
     b = tracker.process_sample(s)
-    print(f"Sample {s} -> Bin {b} -> Offset {tracker.offset} -> Amplitude {tracker.amplitude}")
+    print(f"Sample {s} -> Bin {b} -> Offset {tracker.offset} -> Amplitude {tracker.amplitude} -> Cycle {tracker.cycle_count}")

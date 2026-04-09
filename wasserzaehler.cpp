@@ -54,7 +54,7 @@ int main(void)
 	setup();
 	cnet.broadcastUInt8((uint8_t) RST.STATUS,'S','0','R');
 	init_mytimer();
-/*
+
 	uint16_t v;
   while (1)
   {
@@ -62,14 +62,18 @@ int main(void)
         if (ADCA.CH0.INTFLAGS & ADC_CH_CHIF_bm)
         {
             v = ADCA.CH0RES;   // hier im Debugger beobachten
-            cnet.broadcastUInt16(v,'#','#','#');
+            //cnet.broadcastUInt16(v,'#','#','#');
             ADCA.CH0.INTFLAGS = ADC_CH_CHIF_bm;
+            //LEDROT_TOGGLE;
         }
-    }*/
+    }
 
   testMain();
 
-  while(1);
+  while(1)
+  {
+
+  };
 
 	while (1)
 	{

@@ -3,7 +3,7 @@
 /* -------- Testdaten -------- */
 
 //static const int16_t testdata[] =
-const int16_t testdata[] PROGMEM =
+const int16_t signal_data[] PROGMEM =
 {
 3386, 3386, 3390, 3387, 3387, 3386, 3386, 3385, 3385, 3384, 3383, 3385, 3387, 3386, 3384, 3386, 3385, 3385, 3382, 3386, 3385, 3386, 3385, 3386, 3385, 3385, 3383, 3389, 3386, 3386, 3387, 3386,
 3386, 3386, 3386, 3385, 3386, 3387, 3389, 3385, 3386, 3385, 3384, 3387, 3385, 3385, 3384, 3385, 3383, 3388, 3387, 3389, 3383, 3387, 3387, 3387, 3384, 3388, 3387, 3385, 3386, 3386, 3387, 3385,
@@ -78,109 +78,112 @@ const int16_t testdata[] PROGMEM =
 3432, 3436
 };
 
+// -----------------------------
+// SinTracker (µC optimiert)
+// -----------------------------
+// -----------------------------
+// SinTracker (nahe am Python-Code)
+// -----------------------------
+class SinTracker {
+public:
+    float offset = 3486.0f;
+    float amplitude = 100.0f;
+
+    uint8_t last_bin = 0;
+
+    float bin_means[12] = {0.0f};
+    uint16_t bin_counts[12] = {0};
+
+    uint16_t visited_mask = 0;
+    uint32_t cycle_counter = 0;
+
+    bool cycle_detected = false;
+
+    // -------------------------
+    uint8_t process_sample(uint16_t sample)
+    {
+        // 1. Offset entfernen
+        float delta = (float)sample - offset;
+
+        // 2. Normieren
+        float norm = delta / amplitude;
+
+        if (norm > 1.0f) norm = 1.0f;
+        if (norm < -1.0f) norm = -1.0f;
+
+        // 3. Phase bestimmen (0..1023)
+        float phase_f = (norm + 1.0f) * 511.5f;
+        uint16_t phase = (uint16_t)phase_f;
+
+        if (phase > 1023) phase = 1023;
+
+        // 4. Bin bestimmen (0..11)
+        uint8_t bin = (phase * 12) / 1024;
+
+        // 5. Inkrementeller Mittelwert (wie Python)
+        bin_counts[bin]++;
+        float count = (float)bin_counts[bin];
+        bin_means[bin] += ((float)sample - bin_means[bin]) / count;
+
+        // 6. Besuch markieren
+        visited_mask |= (1 << bin);
+
+        // 7. Zyklus erkannt?
+        if (visited_mask == 0x0FFF)
+        {
+            cycle_detected = true;
+            cycle_counter++;
+            // neuer Offset
+            float sum = 0.0f;
+            for (uint8_t i = 0; i < 12; i++)
+            {
+                sum += bin_means[i];
+            }
+            offset = sum / 12.0f;
+
+            // neue Amplitude
+            float max_dev = 0.0f;
+            for (uint8_t i = 0; i < 12; i++)
+            {
+                float dev = fabsf(bin_means[i] - offset);
+                if (dev > max_dev)
+                    max_dev = dev;
+            }
+            amplitude = max_dev;
+
+            // Reset
+            for (uint8_t i = 0; i < 12; i++)
+            {
+                bin_means[i] = 0.0f;
+                bin_counts[i] = 0;
+            }
+            visited_mask = 0;
+        }
+
+        last_bin = bin;
+        return bin;
+    }
+};
 
 int testMain(void)
 {
     SinTracker tracker;
-    sintracker_init(&tracker);
-
-    size_t n =
-        sizeof(testdata) /
-        sizeof(testdata[0]);
-    for(size_t j=0;j<3;j++)
+    const uint16_t SIGNAL_LEN = sizeof(signal_data) / sizeof(signal_data[0]);
+    for (uint16_t i = 0; i < SIGNAL_LEN; i++)
     {
+        uint16_t sample = pgm_read_word(&signal_data[i]);
+        uint8_t bin = tracker.process_sample(sample);
 
-      for(size_t i=0; i<n ;i++)
-      {
-          int16_t sample = pgm_read_word(&testdata[i]);
-
-
-
-          if(sintracker_process(&tracker, sample))
-          {
-            cnet.broadcastUInt16(tracker.offset,'o','f','f');
-            cnet.broadcastUInt16(tracker.amplitude,'a','m','p');
-          }
-
-          cnet.broadcastUInt16(tracker.last_bin,'p','h','a');
-      }
+        // hier z.B. Debug / UART / DAC etc.
+        //cnet.broadcastUInt16(bin,'p','h','a');
+        LEDROT_TOGGLE;
     }
-    return 0;
+    cnet.broadcastUInt16(tracker.offset,'o','f','f');
+    cnet.broadcastUInt16(tracker.amplitude,'a','m','p');
+    cnet.broadcastUInt16(tracker.cycle_counter,'C','y','c');
+
+    while (1);
 }
 
 
 
-
-// --- Initialisierung
-void sintracker_init(SinTracker *st) {
-    st->offset = 0;
-    st->amplitude = 100;
-    st->last_bin = 0;
-    st->cycle_started = false;
-    for (uint8_t i = 0; i < NUM_BINS; i++) {
-        st->bins[i].sum = 0;
-        st->bins[i].count = 0;
-    }
-}
-
-// Mittelwert-Inkrement für Bin
-static void update_bin(BinState *bin, int16_t value) {
-    bin->sum += value;
-    bin->count++;
-}
-
-// Berechne Mittelwert eines Bins
-static int16_t get_bin_mean(BinState *bin) {
-    if (bin->count == 0) return 0;
-    return (int16_t)(bin->sum / bin->count);
-}
-
-// --- Prozessfunktion für jedes Sample
-// Rückgabe: true = ein Zyklus abgeschlossen
-bool sintracker_process(SinTracker *st, int16_t sample) {
-    int16_t delta = sample - st->offset;
-    int16_t bin_pos = (delta * NUM_BINS) / st->amplitude + NUM_BINS / 2;
-    if (bin_pos < 0) bin_pos = 0;
-    if (bin_pos >= NUM_BINS) bin_pos = NUM_BINS - 1;
-    uint8_t bin = (uint8_t)bin_pos;
-
-    update_bin(&st->bins[bin], sample);
-
-    bool cycle_done = false;
-
-    if (!st->cycle_started) {
-        // Zyklusstart merken
-        if (bin != st->last_bin) st->cycle_started = true;
-    } else {
-        // Zyklusende erkennen: Bin springt zurück auf kleineres Bin
-        if (bin < st->last_bin) {
-            // Mittelwerte aus dem Zyklus nutzen
-            int32_t sum_mean = 0;
-            for (uint8_t i = 0; i < NUM_BINS; i++) sum_mean += get_bin_mean(&st->bins[i]);
-            int16_t new_offset = (int16_t)(sum_mean / NUM_BINS);
-
-            int16_t max_bin = get_bin_mean(&st->bins[0]);
-            int16_t min_bin = max_bin;
-            for (uint8_t i = 1; i < NUM_BINS; i++) {
-                int16_t mean = get_bin_mean(&st->bins[i]);
-                if (mean > max_bin) max_bin = mean;
-                if (mean < min_bin) min_bin = mean;
-            }
-            int16_t new_amplitude = (max_bin - min_bin) / 2;
-
-            st->offset = new_offset;
-            st->amplitude = new_amplitude;
-
-            // Bins zurücksetzen
-            for (uint8_t i = 0; i < NUM_BINS; i++) {
-                st->bins[i].sum = 0;
-                st->bins[i].count = 0;
-            }
-
-            cycle_done = true;
-        }
-    }
-
-    st->last_bin = bin;
-    return cycle_done;
-}

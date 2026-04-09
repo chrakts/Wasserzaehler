@@ -25,7 +25,7 @@ const int8_t sin_table[TABLE_SIZE] = {
     -46, -43, -40, -37, -34, -31, -28, -25, -22, -19, -16, -12, -9, -6,
     -3
 };
-
+/*
 // --- Tracker-Strukturen
 typedef struct {
     int32_t sum;
@@ -40,10 +40,10 @@ typedef struct {
     bool cycle_started;
 } SinTracker;
 
-
+*/
 int testMain(void);
-void sintracker_init(SinTracker *st);
-bool sintracker_process(SinTracker *st, int16_t sample);
+//void sintracker_init(SinTracker *st);
+//bool sintracker_process(SinTracker *st, int16_t sample);
 
 
 #endif // INTERPOLATOR_H_INCLUDED

@@ -35,7 +35,7 @@ void timer_init(void)
 {
         // --- TCC0 -> 1 kHz ---
     TCC0.CTRLA = TC_CLKSEL_DIV64_gc;     // Prescaler 64
-    TCC0.PER   = 499;                    // 1 kHz
+    TCC0.PER   = 499;                    // 499 = 1 kHz
 }
 
 void evsys_init(void)
