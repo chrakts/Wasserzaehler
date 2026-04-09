@@ -1,10 +1,7 @@
-#include "interpolator.h"
 
-/* -------- Testdaten -------- */
 
-//static const int16_t testdata[] =
-const int16_t testdata[] PROGMEM =
-{
+
+signal_data = [
 3386, 3386, 3390, 3387, 3387, 3386, 3386, 3385, 3385, 3384, 3383, 3385, 3387, 3386, 3384, 3386, 3385, 3385, 3382, 3386, 3385, 3386, 3385, 3386, 3385, 3385, 3383, 3389, 3386, 3386, 3387, 3386,
 3386, 3386, 3386, 3385, 3386, 3387, 3389, 3385, 3386, 3385, 3384, 3387, 3385, 3385, 3384, 3385, 3383, 3388, 3387, 3389, 3383, 3387, 3387, 3387, 3384, 3388, 3387, 3385, 3386, 3386, 3387, 3385,
 3387, 3385, 3388, 3388, 3386, 3390, 3388, 3390, 3389, 3389, 3385, 3389, 3390, 3390, 3389, 3392, 3389, 3391, 3392, 3391, 3392, 3393, 3393, 3397, 3392, 3393, 3398, 3393, 3393, 3396, 3396, 3396,
@@ -76,111 +73,90 @@ const int16_t testdata[] PROGMEM =
 3401, 3399, 3399, 3388, 3389, 3389, 3392, 3386, 3388, 3390, 3386, 3386, 3391, 3384, 3384, 3385, 3386, 3392, 3388, 3389, 3389, 3393, 3391, 3391, 3401, 3398, 3400, 3410, 3403, 3415, 3416, 3418,
 3421, 3423, 3426, 3430, 3432, 3435, 3429, 3438, 3430, 3429, 3443, 3430, 3433, 3433, 3432, 3436, 3430, 3429, 3428, 3429, 3435, 3437, 3431, 3431, 3430, 3431, 3430, 3436, 3432, 3430, 3432, 3431,
 3432, 3436
-};
+]
+
+# --------------------------
+# Sinus-Tracker mit 12 Phasenbins
+# --------------------------
+
+SIN_TABLE = [
+    0, 3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36, 39, 42, 45,
+    48, 51, 54, 57, 60, 63, 66, 69, 72, 75, 78, 81, 84, 87, 90, 93,
+    96, 99, 102, 105, 108, 111, 114, 117, 120, 123, 126, 127, 124, 121, 118, 115,
+    112, 109, 106, 103, 100, 97, 94, 91, 88, 85, 82, 79, 76, 73, 70, 67,
+    64, 61, 58, 55, 52, 49, 46, 43, 40, 37, 34, 31, 28, 25, 22, 19,
+    16, 13, 10, 7, 4, 1, -2, -5, -8, -11, -14, -17, -20, -23, -26, -29,
+    -32, -35, -38, -41, -44, -47, -50, -53, -56, -59, -62, -65, -68, -71, -74, -77,
+    -80, -83, -86, -89, -92, -95, -98, -101, -104, -107, -110, -113, -116, -119, -122, -125
+]
+
+# Lookup-Table für Sinus: 1024 Werte, skaliert von -1 bis 1
+SIN_TABLE = [int(1024 * __import__('math').sin(2 * __import__('math').pi * i / 1024)) for i in range(1024)]
+
+class SinTracker:
+    def __init__(self):
+        self.offset = 3486        # Startwert
+        self.amplitude = 100      # Startwert
+        self.last_bin = 0
+        self.bin_count = [0]*12
+        self.bin_mean = [0.0]*12  # Inkrementeller Mittelwert pro Bin
+
+        # Zyklus-Erkennung
+        self.bins_visited = set()
+        self.cycle_detected = False
+
+    def process_sample(self, sample):
+        # Delta zum Offset
+        delta = sample - self.offset
+
+        # Normierung auf -1..1 (mit fester Amplitude)
+        norm = max(-1.0, min(1.0, delta / self.amplitude))
+
+        # Index für Sinus-LUT (0..1023)
+        phase_index = int((norm + 1)/2 * 1023)
+        phase_index = max(0, min(1023, phase_index))
+
+        # Bin 0..11
+        bin12 = int((phase_index / 1024) * 12) % 12
+
+        # Inkrementeller Mittelwert für diesen Bin
+        count = self.bin_count[bin12]
+        self.bin_mean[bin12] = (self.bin_mean[bin12] * count + sample) / (count + 1)
+        self.bin_count[bin12] += 1
+
+        # Zyklus fertig, wenn alle 12 Bins besucht
+        self.bins_visited.add(bin12)
+        if len(self.bins_visited) == 12:
+            self.cycle_detected = True
+
+            # Neuer Offset = Mittelwert über alle Bin-Mittelwerte
+            new_offset = sum(self.bin_mean)/12
+
+            # Neue Amplitude = Mittelwert der max. Abweichungen vom Offset pro Bin
+            # Da wir keine Samples mehr speichern, approximieren wir über die Differenzen zu den Bin-Mittelwerten
+            # (kann optional verfeinert werden)
+            new_amplitude = max(abs(m - new_offset) for m in self.bin_mean)   # grobe Schätzung * 2
+
+            # Update Offset/Amplitude
+            self.offset = new_offset
+            self.amplitude = new_amplitude
+
+            # Bin-Zähler und Mittelwerte für nächsten Zyklus zurücksetzen
+            self.bin_count = [0]*12
+            self.bin_mean = [0.0]*12
+            self.bins_visited.clear()
+
+        # Letztes Bin speichern für Statistik
+        self.last_bin = bin12
+
+        return bin12
+        
+        
+                        
+# Test mit beliebigem Startwinkel
+tracker = SinTracker()
 
 
-int testMain(void)
-{
-    SinTracker tracker;
-    sintracker_init(&tracker);
-
-    size_t n =
-        sizeof(testdata) /
-        sizeof(testdata[0]);
-    for(size_t j=0;j<3;j++)
-    {
-
-      for(size_t i=0; i<n ;i++)
-      {
-          int16_t sample = pgm_read_word(&testdata[i]);
-
-
-
-          if(sintracker_process(&tracker, sample))
-          {
-            cnet.broadcastUInt16(tracker.offset,'o','f','f');
-            cnet.broadcastUInt16(tracker.amplitude,'a','m','p');
-          }
-
-          cnet.broadcastUInt16(tracker.last_bin,'p','h','a');
-      }
-    }
-    return 0;
-}
-
-
-
-
-// --- Initialisierung
-void sintracker_init(SinTracker *st) {
-    st->offset = 0;
-    st->amplitude = 100;
-    st->last_bin = 0;
-    st->cycle_started = false;
-    for (uint8_t i = 0; i < NUM_BINS; i++) {
-        st->bins[i].sum = 0;
-        st->bins[i].count = 0;
-    }
-}
-
-// Mittelwert-Inkrement für Bin
-static void update_bin(BinState *bin, int16_t value) {
-    bin->sum += value;
-    bin->count++;
-}
-
-// Berechne Mittelwert eines Bins
-static int16_t get_bin_mean(BinState *bin) {
-    if (bin->count == 0) return 0;
-    return (int16_t)(bin->sum / bin->count);
-}
-
-// --- Prozessfunktion für jedes Sample
-// Rückgabe: true = ein Zyklus abgeschlossen
-bool sintracker_process(SinTracker *st, int16_t sample) {
-    int16_t delta = sample - st->offset;
-    int16_t bin_pos = (delta * NUM_BINS) / st->amplitude + NUM_BINS / 2;
-    if (bin_pos < 0) bin_pos = 0;
-    if (bin_pos >= NUM_BINS) bin_pos = NUM_BINS - 1;
-    uint8_t bin = (uint8_t)bin_pos;
-
-    update_bin(&st->bins[bin], sample);
-
-    bool cycle_done = false;
-
-    if (!st->cycle_started) {
-        // Zyklusstart merken
-        if (bin != st->last_bin) st->cycle_started = true;
-    } else {
-        // Zyklusende erkennen: Bin springt zurück auf kleineres Bin
-        if (bin < st->last_bin) {
-            // Mittelwerte aus dem Zyklus nutzen
-            int32_t sum_mean = 0;
-            for (uint8_t i = 0; i < NUM_BINS; i++) sum_mean += get_bin_mean(&st->bins[i]);
-            int16_t new_offset = (int16_t)(sum_mean / NUM_BINS);
-
-            int16_t max_bin = get_bin_mean(&st->bins[0]);
-            int16_t min_bin = max_bin;
-            for (uint8_t i = 1; i < NUM_BINS; i++) {
-                int16_t mean = get_bin_mean(&st->bins[i]);
-                if (mean > max_bin) max_bin = mean;
-                if (mean < min_bin) min_bin = mean;
-            }
-            int16_t new_amplitude = (max_bin - min_bin) / 2;
-
-            st->offset = new_offset;
-            st->amplitude = new_amplitude;
-
-            // Bins zurücksetzen
-            for (uint8_t i = 0; i < NUM_BINS; i++) {
-                st->bins[i].sum = 0;
-                st->bins[i].count = 0;
-            }
-
-            cycle_done = true;
-        }
-    }
-
-    st->last_bin = bin;
-    return cycle_done;
-}
+for s in signal_data:
+    b = tracker.process_sample(s)
+    print(f"Sample {s} -> Bin {b} -> Offset {tracker.offset} -> Amplitude {tracker.amplitude}")

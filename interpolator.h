@@ -3,56 +3,47 @@
 
 #include "wasserzaehler.h"
 
-#define OFFSET_SHIFT    10   // größer = langsamer
-#define AMP_DECAY       6    // größer = langsamer
+#include <stdint.h>
 
-#define AMP_MIN         64   // Unterdrückung bei Stillstand
+#define NUM_BINS 12
+#define TABLE_SIZE 256  // Größe der Sinus-Lookup-Tabelle
 
-#define LUT_SIZE        256
+// Lookup-Tabelle für Sinuswerte (0..255 -> -127..127)
+const int8_t sin_table[TABLE_SIZE] = {
+    0, 3, 6, 9, 12, 16, 19, 22, 25, 28, 31, 34, 37, 40, 43, 46,
+    49, 52, 55, 58, 61, 64, 67, 70, 73, 76, 79, 81, 84, 87, 90, 93,
+    95, 98, 101, 104, 106, 109, 111, 114, 117, 119, 122, 124, 127,
+    127, 124, 122, 119, 117, 114, 111, 109, 106, 104, 101, 98, 95,
+    93, 90, 87, 84, 81, 79, 76, 73, 70, 67, 64, 61, 58, 55, 52, 49,
+    46, 43, 40, 37, 34, 31, 28, 25, 22, 19, 16, 12, 9, 6, 3, 0,
+    -3, -6, -9, -12, -16, -19, -22, -25, -28, -31, -34, -37, -40,
+    -43, -46, -49, -52, -55, -58, -61, -64, -67, -70, -73, -76,
+    -79, -81, -84, -87, -90, -93, -95, -98, -101, -104, -106, -109,
+    -111, -114, -117, -119, -122, -124, -127, -127, -124, -122, -119,
+    -117, -114, -111, -109, -106, -104, -101, -98, -95, -93, -90, -87,
+    -84, -81, -79, -76, -73, -70, -67, -64, -61, -58, -55, -52, -49,
+    -46, -43, -40, -37, -34, -31, -28, -25, -22, -19, -16, -12, -9, -6,
+    -3
+};
 
-#define LUT_SIZE 256
-
-#define PHASE_BINS      32
-#define HYSTERESIS      20
-#define SIN_SCALE       2048
-
-typedef struct
-{
+// --- Tracker-Strukturen
+typedef struct {
     int32_t sum;
     uint16_t count;
+} BinState;
 
-} phase_bin_t;
-
-
-typedef struct
-{
-    phase_bin_t bin[PHASE_BINS];
-
-    int16_t amplitude;
+typedef struct {
+    BinState bins[NUM_BINS];
     int16_t offset;
+    int16_t amplitude;
+    uint8_t last_bin;
+    bool cycle_started;
+} SinTracker;
 
-    uint8_t current_bin;
-    uint8_t halfwave;
-
-    uint8_t phase16;
-
-    uint32_t period_counter;
-
-} sin_tracker_t;
 
 int testMain(void);
-void sintracker_prefill(sin_tracker_t *s);
-void sintracker_init(
-        sin_tracker_t *s,
-        int16_t offset,
-        int16_t amplitude);
-void sintracker_recalculate(sin_tracker_t *s);
-uint8_t sintracker_estimate_bin(
-        sin_tracker_t *s,
-        int16_t sample);
-void sintracker_process(
-        sin_tracker_t *s,
-        int16_t adc);
+void sintracker_init(SinTracker *st);
+bool sintracker_process(SinTracker *st, int16_t sample);
 
 
 #endif // INTERPOLATOR_H_INCLUDED
