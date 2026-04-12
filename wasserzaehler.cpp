@@ -31,7 +31,7 @@ void setup()
   evsys_init();
   dma_init();
 
-      // DAC initialisieren
+  // DAC initialisieren
   DACB.CTRLC = DAC_REFSEL_AVCC_gc;        // Referenz AVCC
   DACB.CTRLA = DAC_CH0EN_bm | DAC_ENABLE_bm; // Kanal 0 aktiv, DAC Enable
   DACB.CTRLB = 0;                         // kein Trigger
@@ -42,7 +42,7 @@ void setup()
   //initZaehler();
   eeprom_value_t temp;
   eeprom_logger_init(&temp);
-  wasserstand = temp;
+  tracker.cycle_counter = temp;
 
   PMIC_CTRL = PMIC_LOLVLEX_bm | PMIC_HILVLEN_bm | PMIC_MEDLVLEN_bm;
 	sei();
@@ -55,26 +55,6 @@ int main(void)
 	cnet.broadcastUInt8((uint8_t) RST.STATUS,'S','0','R');
 	init_mytimer();
 
-	uint16_t v;
-  while (1)
-  {
-        // Warten bis ADC eine Event‑Messung gemacht hat
-        if (ADCA.CH0.INTFLAGS & ADC_CH_CHIF_bm)
-        {
-            v = ADCA.CH0RES;   // hier im Debugger beobachten
-            //cnet.broadcastUInt16(v,'#','#','#');
-            ADCA.CH0.INTFLAGS = ADC_CH_CHIF_bm;
-            //LEDROT_TOGGLE;
-        }
-    }
-
-  testMain();
-
-  while(1)
-  {
-
-  };
-
 	while (1)
 	{
 		cnetRec.comStateMachine();
@@ -82,7 +62,7 @@ int main(void)
     if(doEEpromStoring)
     {
       doEEpromStoring = false;
-      uint32_t temp = eeprom_logger_store_if_changed_safe(&wasserstand);
+      uint32_t temp = eeprom_logger_store_if_changed_safe(&(tracker.cycle_counter));
       cnet.broadcastUInt32(temp,'W','i','i');
     }
 
@@ -94,22 +74,29 @@ int main(void)
         switch(statusReport)
         {
           case FIRSTREPORT:
-            //cnet.broadcastUInt32((uint32_t) wasserstand,'W','0','a');
+            cnet.broadcastFloat(tracker.cycle_counter*5+0.42*tracker.actual_phase,'W','0','a');
           break;
           case ADCREPORT:
-            cnet.broadcastUInt16(avg_value,'W','a','c');
+            cnet.broadcastUInt16(avg_value,'A','D','C');
           break;
-
+          case CYCLEREPORT:
+            cnet.broadcastUInt32(tracker.cycle_counter,'C','y','c');
+          break;
+          case PHASEREPORT:
+            cnet.broadcastUInt32(tracker.actual_phase,'P','h','a');
+          break;
           case LASTREPORT:
+              cnet.print("-------------------------\n");
               MyTimers[TIMER_REPORT].value = actReportBetweenBlocks;
               MyTimers[TIMER_REPORT].state = TM_START;
+              //LEDBLAU_TOGGLE;
           break;
-      }
-      LEDGRUEN_OFF;
+        }
     }
 	}
 }
 
+/*
 void initZaehler()
 {
   PORTC_DIRCLR = PIN2_bm;               // PC2 Eingang
@@ -126,5 +113,5 @@ ISR(PORTC_INT0_vect)
     wasserstand += 1;
     MyTimers[TIMER_ENTPRELLEN].state = TM_START;
 
-}
+}*/
 

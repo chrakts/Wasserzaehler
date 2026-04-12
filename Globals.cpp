@@ -6,13 +6,14 @@
 
 #include "wasserzaehler.h"
 #include "CmultiAddresses.h"
+#include "wasserzaehler.h"
 
 const char *Node = NODE_STRING;
 
 volatile char strStatusNachtabsenkung[5];
 volatile bool statusNachtabsenkung;
 
-volatile uint32_t wasserstand = 3453;
+//volatile uint32_t wasserstand = 3453;
 
 
 uint16_t actReportBetweenBlocks  = REPORT_BETWEEN_BLOCKS;
@@ -23,6 +24,8 @@ volatile uint8_t statusReport = FIRSTREPORT;
 volatile bool    sendStatusReport = true;
 
 volatile bool doEEpromStoring = false;
+
+SinTracker tracker;
 
 
 Communication cnet(0,Node,5,true);

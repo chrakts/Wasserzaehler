@@ -22,10 +22,12 @@
 #include <string.h>
 #include "timer.h"
 #include "Communication.h"
+#include "cmultiStandardCommands.h"
 #include "myTimers.h"
 #include "myconstants.h"
 #include "secrets.h"
 #include "eeprom_logger.h"
+#include "interpolator.h"
 
 extern uint16_t actReportBetweenBlocks;
 extern uint16_t actReportBetweenSensors;
@@ -39,14 +41,17 @@ extern volatile bool doEEpromStoring;
 extern volatile char strStatusNachtabsenkung[5];
 extern volatile bool statusNachtabsenkung;
 
-extern volatile uint32_t wasserstand;
+//extern volatile uint32_t wasserstand;
 
 class Communication;   // Forward declaration
 class ComReceiver;
+class SinTracker;
 extern Serial debug;
 extern Communication cnet;
 extern ComReceiver cnetRec;
 extern CRC_Calc crcGlobal;
+
+extern SinTracker tracker;
 
 extern volatile uint16_t avg_value;
 

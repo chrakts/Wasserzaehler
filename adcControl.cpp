@@ -35,7 +35,7 @@ void timer_init(void)
 {
         // --- TCC0 -> 1 kHz ---
     TCC0.CTRLA = TC_CLKSEL_DIV64_gc;     // Prescaler 64
-    TCC0.PER   = 499;                    // 499 = 1 kHz
+    TCC0.PER   = 156;                    // 499 = 1 kHz; 156 = 3.2kHz -> 50 Werte / s
 }
 
 void evsys_init(void)
@@ -83,7 +83,7 @@ ISR(DMA_CH0_vect)
 
     if(active_buffer==0)
     {
-      LEDBLAU_TOGGLE;
+      LEDGRUEN_TOGGLE;
       active_buffer = 1;
       uint32_t dst = (uint32_t)&adc_buf_B[0];
 
@@ -96,7 +96,7 @@ ISR(DMA_CH0_vect)
     }
     else
     {
-      LEDBLAU_TOGGLE;
+      LEDGRUEN_TOGGLE;
       active_buffer = 0;
       uint32_t dst = (uint32_t)&adc_buf_A[0];
 
@@ -109,5 +109,6 @@ ISR(DMA_CH0_vect)
     }
 
     avg_value = (uint16_t) (sum >> 6);
+    tracker.process_sample(avg_value);
 }
 

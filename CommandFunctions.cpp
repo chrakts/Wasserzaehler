@@ -29,7 +29,7 @@ void gotStatusNachtabsenkung()
 void jobSetWasserstand(ComReceiver *comRec, char function,char address,char job, void * pMem)
 {
   //wasserstand = 9999;
-  wasserstand = ((uint32_t*)pMem)[0];
+  tracker.cycle_counter = ((uint32_t*)pMem)[0];
   //eeprom_logger_store_if_changed_safe(&wasserstand);
 }
 
