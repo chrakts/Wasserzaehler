@@ -38,6 +38,8 @@ class SinTracker {
 public:
     float offset = 3486.0f;
     float amplitude = 100.0f;
+    uint16_t min_sample = 65535;
+    uint16_t max_sample = 0;
 
     uint8_t last_bin = 0;
 
@@ -54,6 +56,10 @@ public:
     // -------------------------
     uint8_t process_sample(uint16_t sample)
     {
+        if(sample<min_sample)
+          min_sample = sample;
+        if(sample>max_sample)
+          max_sample = sample;
         // 1. Offset entfernen
         float delta = (float)sample - offset;
 
@@ -73,9 +79,11 @@ public:
         uint8_t bin = (phase * 12) / 1024;
 
         // 5. Inkrementeller Mittelwert (wie Python)
+        /*
         bin_counts[bin]++;
         float count = (float)bin_counts[bin];
         bin_means[bin] += ((float)sample - bin_means[bin]) / count;
+        */
 
         // 6. Besuch markieren
         visited_mask |= (1 << bin);
@@ -91,14 +99,17 @@ public:
             cycle_detected = true;
             cycle_counter++;
             // neuer Offset
+            /*
             float sum = 0.0f;
             for (uint8_t i = 0; i < 12; i++)
             {
                 sum += bin_means[i];
             }
-            offset = sum / 12.0f;
+            offset = sum / 12.0f;*/
+            offset = (min_sample>>1)+(max_sample>>1);
 
             // neue Amplitude
+            /*
             float max_dev = 0.0f;
             for (uint8_t i = 0; i < 12; i++)
             {
@@ -107,13 +118,18 @@ public:
                     max_dev = dev;
             }
             amplitude = max_dev;
-
+            */
+            amplitude = max_sample-min_sample;
             // Reset
+            /*
             for (uint8_t i = 0; i < 12; i++)
             {
                 bin_means[i] = 0.0f;
                 bin_counts[i] = 0;
             }
+            */
+            min_sample = 65535;
+            max_sample = 0;
             visited_mask = 0;
         }
 
